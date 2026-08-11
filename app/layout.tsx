@@ -17,26 +17,26 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase,
     title: "Boteco do Zé | Cardápio",
     description:
-      "Petiscos caprichados, porções para compartilhar e bebidas sempre geladas.",
+      "Cervejas, drinks, doses, porções e jogos no cardápio digital do Boteco do Zé.",
     openGraph: {
       title: "Boteco do Zé",
-      description: "Sabor de boteco. Jeito de casa.",
+      description: "Cerveja gelada, porções e diversão no Boteco do Zé.",
       locale: "pt_BR",
       type: "website",
       images: [
         {
-          url: new URL("/og.png", metadataBase),
-          width: 1200,
-          height: 630,
-          alt: "Boteco do Zé — sabor de boteco, jeito de casa",
+          url: new URL("/logo-boteco-do-ze.png", metadataBase),
+          width: 1536,
+          height: 1024,
+          alt: "Logo do Boteco do Zé em uma placa de madeira com detalhes dourados",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Boteco do Zé",
-      description: "Sabor de boteco. Jeito de casa.",
-      images: [new URL("/og.png", metadataBase)],
+      description: "Cerveja gelada, porções e diversão no Boteco do Zé.",
+      images: [new URL("/logo-boteco-do-ze.png", metadataBase)],
     },
   };
 }

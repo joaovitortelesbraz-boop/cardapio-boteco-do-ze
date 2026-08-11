@@ -3,9 +3,9 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 
 interface Env {
-  ASSETS: Fetcher;
+  ASSETS?: Fetcher;
   DB: D1Database;
-  IMAGES: {
+  IMAGES?: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
         output(options: { format: string; quality: number }): Promise<{ response(): Response }>;
@@ -30,6 +30,25 @@ const worker = {
     const url = new URL(request.url);
 
     if (url.pathname === "/_vinext/image") {
+      const sourcePath = url.searchParams.get("url");
+
+      // The local Cloudflare runtime does not always expose image/asset
+      // bindings. In that case, serve the original public asset instead of
+      // crashing the application while preserving optimization in production.
+      if (!env.ASSETS || !env.IMAGES) {
+        if (!sourcePath) {
+          return new Response("Missing image URL", { status: 400 });
+        }
+
+        const sourceUrl = new URL(sourcePath, request.url);
+
+        if (sourceUrl.origin !== url.origin) {
+          return new Response("Invalid image URL", { status: 400 });
+        }
+
+        return Response.redirect(sourceUrl, 307);
+      }
+
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {
         fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),

@@ -1,4 +1,12 @@
-export type MenuCategoryId = "petiscos" | "porcoes" | "lanches" | "bebidas";
+export type MenuCategoryId =
+  | "cervejas"
+  | "sem-alcool"
+  | "drinks"
+  | "doses"
+  | "doces"
+  | "cigarros"
+  | "porcoes"
+  | "jogos";
 
 export interface MenuCategory {
   id: MenuCategoryId;
@@ -11,10 +19,13 @@ export interface MenuProduct {
   slug: string;
   categoryId: MenuCategoryId;
   name: string;
-  description: string;
   priceInCents: number;
-  imageUrl: string;
-  imageAlt: string;
+  description?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  imageIsPlaceholder?: boolean;
+  imageFit?: "cover" | "contain";
+  imagePosition?: string;
   featured?: boolean;
   badge?: string;
   available: boolean;

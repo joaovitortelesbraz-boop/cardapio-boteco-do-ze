@@ -6,13 +6,12 @@ import { getMenuPageData } from "@/src/features/menu/application/get-menu-page-d
 
 export default async function Home() {
   const menu = await getMenuPageData();
-  const featuredProduct = menu.products.find((product) => product.featured);
 
   return (
-    <div className="min-h-screen bg-[#f6f0e6] text-[#201b16]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--cream)]">
       <Header />
       <main>
-        <Hero featuredProduct={featuredProduct} />
+        <Hero />
         <MenuCatalog categories={menu.categories} products={menu.products} />
       </main>
       <Footer />

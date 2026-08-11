@@ -1,4 +1,5 @@
 import type { MenuCategory, MenuCategoryId } from "@/src/domain/menu/menu.types";
+import { CategoryIcon } from "./CategoryIcon";
 
 export type MenuFilter = "all" | MenuCategoryId;
 
@@ -32,14 +33,27 @@ export function CategoryTabs({
             key={option.id}
             type="button"
             aria-pressed={isActive}
+            aria-controls="menu-results"
             onClick={() => onChange(option.id)}
-            className={`min-h-11 shrink-0 rounded-full border px-5 text-sm font-bold transition ${
+            className={`relative isolate min-h-11 shrink-0 overflow-hidden rounded-md border bg-[#171009] px-5 text-sm font-bold transition-[border-color,color,box-shadow] duration-200 ease-out motion-reduce:transition-none ${
               isActive
-                ? "border-[#17130f] bg-[#17130f] text-white shadow-lg shadow-black/10"
-                : "border-[#d9cdbb] bg-[#fffaf1] text-[#5f5549] hover:border-[#9d8d79] hover:text-[#17130f]"
+                ? "border-[#ffcf62] text-[#100b07] shadow-[0_7px_20px_rgb(231_163_22/0.18)]"
+                : "border-[#e7a316]/30 text-[#cdb886] shadow-none hover:border-[#e7a316]/70 hover:text-[#fff0c2]"
             }`}
           >
-            {option.name}
+            <span
+              className={`pointer-events-none absolute inset-0 bg-gradient-to-b from-[#ffbc24] to-[#b66a06] transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+                isActive ? "opacity-100" : "opacity-0"
+              }`}
+              aria-hidden="true"
+            />
+            <span className="relative z-10 inline-flex items-center gap-2">
+              <CategoryIcon
+                categoryId={option.id}
+                className="size-[18px] shrink-0"
+              />
+              {option.name}
+            </span>
           </button>
         );
       })}
