@@ -18,6 +18,27 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "Boteco do Zé | Cardápio",
     description:
       "Cervejas, drinks, doses, porções e jogos no cardápio digital do Boteco do Zé.",
+    icons: {
+      icon: [
+        {
+          url: "/favicon-32x32.png",
+          sizes: "32x32",
+          type: "image/png",
+        },
+        {
+          url: "/favicon-48x48.png",
+          sizes: "48x48",
+          type: "image/png",
+        },
+      ],
+      apple: [
+        {
+          url: "/apple-touch-icon.png",
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
+    },
     openGraph: {
       title: "Boteco do Zé",
       description: "Cerveja gelada, porções e diversão no Boteco do Zé.",
