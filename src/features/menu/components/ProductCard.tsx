@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import type { MenuProduct } from "@/src/domain/menu/menu.types";
 import { formatCurrency } from "@/src/shared/lib/format-currency";
 import { CategoryIcon } from "./CategoryIcon";
@@ -11,6 +11,11 @@ interface ProductCardProps {
 }
 
 type ImageStatus = "loading" | "loaded" | "error";
+
+type ProductImageStyle = CSSProperties & {
+  "--product-image-scale"?: number;
+  "--product-image-hover-scale"?: number;
+};
 
 const responsiveImageSizes =
   "(min-width: 1280px) 584px, (min-width: 1024px) calc(50vw - 3rem), (min-width: 640px) calc(100vw - 4rem), calc(100vw - 2.5rem)";
@@ -25,6 +30,17 @@ function ProductMedia({ product }: ProductCardProps) {
   const imageIsVisible = hasConfiguredImage && imageStatus === "loaded";
   const imageFit = product.imageFit ?? "cover";
   const imagePosition = product.imagePosition ?? "50% 50%";
+  const imageScale = product.imageScale;
+  const foregroundImageStyle: ProductImageStyle = {
+    objectPosition: imagePosition,
+    ...(imageScale === undefined
+      ? {}
+      : {
+          objectFit: imageFit,
+          "--product-image-scale": imageScale,
+          "--product-image-hover-scale": Math.min(imageScale + 0.02, 1.05),
+        }),
+  };
 
   return (
     <div
@@ -61,10 +77,14 @@ function ProductMedia({ product }: ProductCardProps) {
             loading="lazy"
             onLoad={() => setImageStatus("loaded")}
             onError={() => setImageStatus("error")}
-            style={{ objectPosition: imagePosition }}
+            style={foregroundImageStyle}
             className={`${
               imageFit === "contain" ? "object-contain" : "object-cover"
-            } transition-[opacity,transform,filter] duration-500 [mask-image:linear-gradient(to_bottom,black_0%,black_52%,transparent_94%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_52%,transparent_94%)] group-hover:scale-[1.025] sm:[mask-image:linear-gradient(to_right,black_0%,black_48%,transparent_80%)] sm:[-webkit-mask-image:linear-gradient(to_right,black_0%,black_48%,transparent_80%)] ${
+            } transition-[opacity,transform,filter] duration-500 [mask-image:linear-gradient(to_bottom,black_0%,black_52%,transparent_94%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_52%,transparent_94%)] sm:[mask-image:linear-gradient(to_right,black_0%,black_48%,transparent_80%)] sm:[-webkit-mask-image:linear-gradient(to_right,black_0%,black_48%,transparent_80%)] ${
+              imageScale === undefined
+                ? "group-hover:scale-[1.025]"
+                : "scale-[var(--product-image-scale)] group-hover:scale-[var(--product-image-hover-scale)]"
+            } ${
               imageIsVisible ? "opacity-100" : "opacity-0"
             }`}
           />

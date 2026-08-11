@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -39,7 +40,109 @@ const expectedProductImages = [
   ["prd_033", "porçoes/Batata e Porco Acebolado.png"],
   ["prd_034", "jogos/Sinuca .png"],
   ["prd_035", "jogos/Fliperama .png"],
+  ["prd_036", "drinks/Ice Off.jpg"],
+  ["prd_037", "drinks/Skoll Beats.webp"],
+  ["prd_038", "drinks/We mix.jpg"],
+  ["prd_039", "sem-alcool/H20.jpg"],
+  ["prd_040", "sem-alcool/Água com gás.png"],
+  ["prd_041", "doses/Whisky Ballantines.webp"],
+  ["prd_042", "doses/Dreher.webp"],
 ];
+
+const legacyMenuHash =
+  "8243a61227e8ae170151bc3127f604a405a5b1c9a31341d7043090ed13f13529";
+
+const expectedNewProducts = [
+  {
+    id: "prd_036",
+    slug: "ice-off",
+    categoryId: "drinks",
+    name: "Ice Off",
+    priceInCents: 700,
+    imageUrl: "/images/drinks/Ice Off.jpg",
+    imageFit: "contain",
+    imagePosition: "21% 50%",
+    imageScale: 0.85,
+    available: true,
+  },
+  {
+    id: "prd_037",
+    slug: "skoll-beats",
+    categoryId: "drinks",
+    name: "Skoll Beats",
+    priceInCents: 1000,
+    imageUrl: "/images/drinks/Skoll Beats.webp",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
+  {
+    id: "prd_038",
+    slug: "we-mix",
+    categoryId: "drinks",
+    name: "We Mix",
+    priceInCents: 1000,
+    imageUrl: "/images/drinks/We mix.jpg",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
+  {
+    id: "prd_039",
+    slug: "h2o",
+    categoryId: "sem-alcool",
+    name: "H2O",
+    priceInCents: 800,
+    imageUrl: "/images/sem-alcool/H20.jpg",
+    imageFit: "contain",
+    imagePosition: "28% 50%",
+    available: true,
+  },
+  {
+    id: "prd_040",
+    slug: "agua-com-gas",
+    categoryId: "sem-alcool",
+    name: "Água com gás",
+    priceInCents: 400,
+    imageUrl: "/images/sem-alcool/Água com gás.png",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
+  {
+    id: "prd_041",
+    slug: "dose-whisky-ballantines",
+    categoryId: "doses",
+    name: "Dose de Whisky Ballantine's",
+    priceInCents: 1200,
+    imageUrl: "/images/doses/Whisky Ballantines.webp",
+    imageFit: "cover",
+    imagePosition: "48% 55%",
+    available: true,
+  },
+  {
+    id: "prd_042",
+    slug: "dose-dreher",
+    categoryId: "doses",
+    name: "Dose Dreher",
+    priceInCents: 600,
+    imageUrl: "/images/doses/Dreher.webp",
+    imageFit: "cover",
+    imagePosition: "48% 51%",
+    available: true,
+  },
+];
+
+const expectedCategoryCounts = {
+  cervejas: 8,
+  "sem-alcool": 6,
+  drinks: 7,
+  doses: 11,
+  doces: 2,
+  cigarros: 2,
+  porcoes: 4,
+  jogos: 2,
+};
 
 function getProductCardHtml(html, productId) {
   const cardStart = html.indexOf(`data-product-card="${productId}"`);
@@ -49,6 +152,23 @@ function getProductCardHtml(html, productId) {
   assert.notEqual(cardEnd, -1, `Fim do card ${productId} não encontrado`);
 
   return html.slice(cardStart, cardEnd);
+}
+
+function getCategorySectionHtml(html, categoryId) {
+  const sectionMarker = `<section aria-labelledby="category-${categoryId}">`;
+  const sectionStart = html.indexOf(sectionMarker);
+  assert.notEqual(sectionStart, -1, `Categoria ${categoryId} não encontrada`);
+
+  const nextSection = html.indexOf(
+    '<section aria-labelledby="category-',
+    sectionStart + sectionMarker.length,
+  );
+
+  return html.slice(sectionStart, nextSection === -1 ? undefined : nextSection);
+}
+
+function normalizeRenderedHtml(html) {
+  return html.replaceAll("<!-- -->", "").replaceAll("&#x27;", "'");
 }
 
 async function loadWorker() {
@@ -246,6 +366,92 @@ test("renders one consistent vector icon set for the menu categories", async () 
   assert.doesNotMatch(html, /🍺|🥤|🍹|🥃|🍬|🚬|🍟|🎮|✦/u);
 });
 
+test("preserves the legacy menu and adds exactly seven products", async () => {
+  const menuDataUrl = new URL(
+    "../src/data/menu/menu.data.ts",
+    import.meta.url,
+  );
+  menuDataUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { menuCategories, menuProducts } = await import(menuDataUrl.href);
+  const legacyProducts = menuProducts
+    .filter((product) => Number(product.id.slice(4)) <= 35)
+    .toSorted((first, second) => first.id.localeCompare(second.id));
+  const newProducts = menuProducts
+    .filter((product) => Number(product.id.slice(4)) >= 36)
+    .toSorted((first, second) => first.id.localeCompare(second.id));
+
+  assert.equal(menuProducts.length, 42);
+  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 42);
+  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 42);
+  assert.equal(
+    createHash("sha256")
+      .update(JSON.stringify(legacyProducts))
+      .digest("hex"),
+    legacyMenuHash,
+  );
+  assert.deepEqual(newProducts, expectedNewProducts);
+
+  assert.deepEqual(
+    Object.fromEntries(
+      menuCategories.map((category) => [
+        category.id,
+        menuProducts.filter((product) => product.categoryId === category.id)
+          .length,
+      ]),
+    ),
+    expectedCategoryCounts,
+  );
+
+  for (const [categoryId, expectedNames] of [
+    ["drinks", ["Ice Off", "Skoll Beats", "We Mix"]],
+    ["sem-alcool", ["H2O", "Água com gás"]],
+    ["doses", ["Dose de Whisky Ballantine's", "Dose Dreher"]],
+  ]) {
+    const categoryNames = menuProducts
+      .filter((product) => product.categoryId === categoryId)
+      .map((product) => product.name);
+
+    assert.deepEqual(categoryNames.slice(-expectedNames.length), expectedNames);
+  }
+});
+
+test("renders the new products inside their existing category sections", async () => {
+  const response = await render();
+  const html = await response.text();
+
+  for (const [categoryId, expectedCount, productIds] of [
+    ["sem-alcool", 6, ["prd_039", "prd_040"]],
+    ["drinks", 7, ["prd_036", "prd_037", "prd_038"]],
+    ["doses", 11, ["prd_041", "prd_042"]],
+  ]) {
+    const sectionHtml = normalizeRenderedHtml(
+      getCategorySectionHtml(html, categoryId),
+    );
+
+    assert.match(sectionHtml, new RegExp(`${expectedCount} opções`));
+
+    for (const productId of productIds) {
+      assert.match(sectionHtml, new RegExp(`data-product-card="${productId}"`));
+    }
+  }
+
+  assert.match(normalizeRenderedHtml(html), />42 itens</);
+});
+
+test("applies the custom framing only to the Ice Off foreground image", async () => {
+  const response = await render();
+  const html = await response.text();
+  const iceOffCard = getProductCardHtml(html, "prd_036");
+  const nextProductCard = getProductCardHtml(html, "prd_037");
+
+  assert.match(iceOffCard, /object-fit:contain/);
+  assert.match(iceOffCard, /object-position:21% 50%/);
+  assert.match(iceOffCard, /--product-image-scale:0\.85/);
+  assert.match(iceOffCard, /--product-image-hover-scale:0\.87/);
+  assert.doesNotMatch(nextProductCard, /--product-image-scale/);
+  assert.doesNotMatch(nextProductCard, /--product-image-hover-scale/);
+});
+
 test("renders local image support for every menu product", async () => {
   await Promise.all(
     expectedProductImages.map(([, imagePath]) =>
@@ -260,13 +466,36 @@ test("renders local image support for every menu product", async () => {
     ...html.matchAll(/data-product-card="(prd_\d{3})"/g),
   ].map((match) => match[1]);
 
+  const expectedRenderedProductIds = [
+    ...Array.from({ length: 12 }, (_, index) =>
+      `prd_${String(index + 1).padStart(3, "0")}`,
+    ),
+    "prd_039",
+    "prd_040",
+    ...Array.from({ length: 4 }, (_, index) =>
+      `prd_${String(index + 13).padStart(3, "0")}`,
+    ),
+    "prd_036",
+    "prd_037",
+    "prd_038",
+    ...Array.from({ length: 9 }, (_, index) =>
+      `prd_${String(index + 17).padStart(3, "0")}`,
+    ),
+    "prd_041",
+    "prd_042",
+    ...Array.from({ length: 10 }, (_, index) =>
+      `prd_${String(index + 26).padStart(3, "0")}`,
+    ),
+  ];
+
+  assert.deepEqual(renderedProductIds, expectedRenderedProductIds);
   assert.deepEqual(
-    renderedProductIds,
+    renderedProductIds.filter((productId) => Number(productId.slice(4)) <= 35),
     Array.from({ length: 35 }, (_, index) =>
       `prd_${String(index + 1).padStart(3, "0")}`,
     ),
   );
-  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 35);
+  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 42);
   assert.equal((html.match(/data-image-placeholder="true"/g) ?? []).length, 0);
 
   for (const [productId, imagePath] of expectedProductImages) {
@@ -275,6 +504,21 @@ test("renders local image support for every menu product", async () => {
     assert.ok(
       cardHtml.includes(encodedImageUrl),
       `${productId} não usa /images/${imagePath}`,
+    );
+  }
+
+  const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+  for (const product of expectedNewProducts) {
+    const cardHtml = normalizeRenderedHtml(getProductCardHtml(html, product.id));
+
+    assert.ok(cardHtml.includes(product.name), `${product.name} não renderizado`);
+    assert.ok(
+      cardHtml.includes(currencyFormatter.format(product.priceInCents / 100)),
+      `Preço de ${product.name} não renderizado no padrão brasileiro`,
     );
   }
 

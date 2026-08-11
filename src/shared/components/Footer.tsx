@@ -56,6 +56,21 @@ export function Footer() {
           </div>
         </div>
       </Container>
+
+      <Container className="mt-10 border-t border-[#e7a316]/15 pt-6 text-center sm:mt-12">
+        <p className="text-xs font-medium text-[#9e8b62]">
+          Criado por{" "}
+          <a
+            className="rounded-sm font-semibold text-[#e7a316] underline decoration-[#e7a316]/0 underline-offset-4 transition-[color,text-decoration-color,filter] duration-200 ease-out hover:text-[#ffbc24] hover:decoration-[#e7a316]/70 hover:drop-shadow-[0_0_5px_rgb(231_163_22/0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e7a316]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050403]"
+            href="https://www.instagram.com/telescode.dev?igsh=ZDR5Y2pxNmxrZXhr&utm_source=qr"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram do desenvolvedor @telescode.dev"
+          >
+            @telescode.dev
+          </a>
+        </p>
+      </Container>
     </footer>
   );
 }

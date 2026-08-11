@@ -26,6 +26,7 @@ export interface MenuProduct {
   imageIsPlaceholder?: boolean;
   imageFit?: "cover" | "contain";
   imagePosition?: string;
+  imageScale?: number;
   featured?: boolean;
   badge?: string;
   available: boolean;
