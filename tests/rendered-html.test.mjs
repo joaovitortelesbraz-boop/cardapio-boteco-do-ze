@@ -47,6 +47,9 @@ const expectedProductImages = [
   ["prd_040", "sem-alcool/Água com gás.png"],
   ["prd_041", "doses/Whisky Ballantines.webp"],
   ["prd_042", "doses/Dreher.webp"],
+  ["prd_043", "sem-alcool/Guaravita.png"],
+  ["prd_044", "sem-alcool/Água de coco.png"],
+  ["prd_045", "sem-alcool/Suco Del Valle.png"],
 ];
 
 const legacyMenuHash =
@@ -131,11 +134,44 @@ const expectedNewProducts = [
     imagePosition: "48% 51%",
     available: true,
   },
+  {
+    id: "prd_043",
+    slug: "guaravita",
+    categoryId: "sem-alcool",
+    name: "Guaravita",
+    priceInCents: 400,
+    imageUrl: "/images/sem-alcool/Guaravita.png",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
+  {
+    id: "prd_044",
+    slug: "agua-de-coco",
+    categoryId: "sem-alcool",
+    name: "Água de coco",
+    priceInCents: 600,
+    imageUrl: "/images/sem-alcool/Água de coco.png",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
+  {
+    id: "prd_045",
+    slug: "suco-del-valle",
+    categoryId: "sem-alcool",
+    name: "Suco Del Valle",
+    priceInCents: 500,
+    imageUrl: "/images/sem-alcool/Suco Del Valle.png",
+    imageFit: "contain",
+    imagePosition: "28% 52%",
+    available: true,
+  },
 ];
 
 const expectedCategoryCounts = {
   cervejas: 8,
-  "sem-alcool": 6,
+  "sem-alcool": 9,
   drinks: 7,
   doses: 11,
   doces: 2,
@@ -366,7 +402,7 @@ test("renders one consistent vector icon set for the menu categories", async () 
   assert.doesNotMatch(html, /🍺|🥤|🍹|🥃|🍬|🚬|🍟|🎮|✦/u);
 });
 
-test("preserves the legacy menu and adds exactly seven products", async () => {
+test("preserves the legacy menu and adds exactly ten products", async () => {
   const menuDataUrl = new URL(
     "../src/data/menu/menu.data.ts",
     import.meta.url,
@@ -380,9 +416,9 @@ test("preserves the legacy menu and adds exactly seven products", async () => {
     .filter((product) => Number(product.id.slice(4)) >= 36)
     .toSorted((first, second) => first.id.localeCompare(second.id));
 
-  assert.equal(menuProducts.length, 42);
-  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 42);
-  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 42);
+  assert.equal(menuProducts.length, 45);
+  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 45);
+  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 45);
   assert.equal(
     createHash("sha256")
       .update(JSON.stringify(legacyProducts))
@@ -404,7 +440,16 @@ test("preserves the legacy menu and adds exactly seven products", async () => {
 
   for (const [categoryId, expectedNames] of [
     ["drinks", ["Ice Off", "Skoll Beats", "We Mix"]],
-    ["sem-alcool", ["H2O", "Água com gás"]],
+    [
+      "sem-alcool",
+      [
+        "H2O",
+        "Água com gás",
+        "Guaravita",
+        "Água de coco",
+        "Suco Del Valle",
+      ],
+    ],
     ["doses", ["Dose de Whisky Ballantine's", "Dose Dreher"]],
   ]) {
     const categoryNames = menuProducts
@@ -420,7 +465,11 @@ test("renders the new products inside their existing category sections", async (
   const html = await response.text();
 
   for (const [categoryId, expectedCount, productIds] of [
-    ["sem-alcool", 6, ["prd_039", "prd_040"]],
+    [
+      "sem-alcool",
+      9,
+      ["prd_039", "prd_040", "prd_043", "prd_044", "prd_045"],
+    ],
     ["drinks", 7, ["prd_036", "prd_037", "prd_038"]],
     ["doses", 11, ["prd_041", "prd_042"]],
   ]) {
@@ -435,7 +484,26 @@ test("renders the new products inside their existing category sections", async (
     }
   }
 
-  assert.match(normalizeRenderedHtml(html), />42 itens</);
+  for (const categoryId of [
+    "cervejas",
+    "drinks",
+    "doses",
+    "doces",
+    "cigarros",
+    "porcoes",
+    "jogos",
+  ]) {
+    const sectionHtml = getCategorySectionHtml(html, categoryId);
+
+    for (const productId of ["prd_043", "prd_044", "prd_045"]) {
+      assert.doesNotMatch(
+        sectionHtml,
+        new RegExp(`data-product-card="${productId}"`),
+      );
+    }
+  }
+
+  assert.match(normalizeRenderedHtml(html), />45 itens</);
 });
 
 test("applies the custom framing only to the Ice Off foreground image", async () => {
@@ -472,6 +540,9 @@ test("renders local image support for every menu product", async () => {
     ),
     "prd_039",
     "prd_040",
+    "prd_043",
+    "prd_044",
+    "prd_045",
     ...Array.from({ length: 4 }, (_, index) =>
       `prd_${String(index + 13).padStart(3, "0")}`,
     ),
@@ -495,7 +566,7 @@ test("renders local image support for every menu product", async () => {
       `prd_${String(index + 1).padStart(3, "0")}`,
     ),
   );
-  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 42);
+  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 45);
   assert.equal((html.match(/data-image-placeholder="true"/g) ?? []).length, 0);
 
   for (const [productId, imagePath] of expectedProductImages) {
