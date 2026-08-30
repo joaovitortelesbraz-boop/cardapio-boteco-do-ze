@@ -490,6 +490,17 @@ export const menuProducts = [
     imagePosition: "50% 54%",
     available: true,
   },
+  {
+    id: "prd_049",
+    slug: "salgadinho",
+    categoryId: "doces",
+    name: "Salgadinho",
+    priceInCents: 400,
+    imageUrl: "/images/doces/Fandangos.webp",
+    imageFit: "cover",
+    imagePosition: "48% 60%",
+    available: true,
+  },
 
   {
     id: "prd_028",

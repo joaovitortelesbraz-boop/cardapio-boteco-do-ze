@@ -53,6 +53,7 @@ const expectedProductImages = [
   ["prd_046", "doses/Whisky Red Label.webp"],
   ["prd_047", "doses/Whisky Cavalo Branco.webp"],
   ["prd_048", "doses/Vodka Smirnoff.webp"],
+  ["prd_049", "doces/Fandangos.webp"],
 ];
 
 const legacyMenuHash =
@@ -203,6 +204,17 @@ const expectedNewProducts = [
     imagePosition: "28% 50%",
     available: true,
   },
+  {
+    id: "prd_049",
+    slug: "salgadinho",
+    categoryId: "doces",
+    name: "Salgadinho",
+    priceInCents: 400,
+    imageUrl: "/images/doces/Fandangos.webp",
+    imageFit: "cover",
+    imagePosition: "48% 60%",
+    available: true,
+  },
 ];
 
 const expectedCategoryCounts = {
@@ -210,7 +222,7 @@ const expectedCategoryCounts = {
   "sem-alcool": 9,
   drinks: 7,
   doses: 14,
-  doces: 2,
+  doces: 3,
   cigarros: 2,
   porcoes: 4,
   jogos: 2,
@@ -458,9 +470,9 @@ test("preserves the legacy menu except the authorized chopp price and adds exact
     (product) => product.slug === "chopp-stengel",
   );
 
-  assert.equal(menuProducts.length, 48);
-  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 48);
-  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 48);
+  assert.equal(menuProducts.length, 49);
+  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 49);
+  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 49);
   assert.equal(
     createHash("sha256")
       .update(JSON.stringify(normalizedLegacyProducts))
@@ -505,6 +517,7 @@ test("preserves the legacy menu except the authorized chopp price and adds exact
         "Dose de Vodka Smirnoff",
       ],
     ],
+    ["doces", ["Bala Halls", "Trident", "Salgadinho"]],
   ]) {
     const categoryNames = menuProducts
       .filter((product) => product.categoryId === categoryId)
@@ -530,6 +543,7 @@ test("renders the new products inside their existing category sections", async (
       14,
       ["prd_041", "prd_042", "prd_046", "prd_047", "prd_048"],
     ],
+    ["doces", 3, ["prd_049"]],
   ]) {
     const sectionHtml = normalizeRenderedHtml(
       getCategorySectionHtml(html, categoryId),
@@ -580,7 +594,22 @@ test("renders the new products inside their existing category sections", async (
     }
   }
 
-  assert.match(normalizeRenderedHtml(html), />48 itens</);
+  for (const categoryId of [
+    "cervejas",
+    "sem-alcool",
+    "drinks",
+    "doses",
+    "cigarros",
+    "porcoes",
+    "jogos",
+  ]) {
+    assert.doesNotMatch(
+      getCategorySectionHtml(html, categoryId),
+      /data-product-card="prd_049"/,
+    );
+  }
+
+  assert.match(normalizeRenderedHtml(html), />49 itens</);
 });
 
 test("renders the updated Chopp Stengel price without duplicating the product", async () => {
@@ -651,8 +680,11 @@ test("renders local image support for every menu product", async () => {
     "prd_046",
     "prd_047",
     "prd_048",
-    ...Array.from({ length: 10 }, (_, index) =>
-      `prd_${String(index + 26).padStart(3, "0")}`,
+    "prd_026",
+    "prd_027",
+    "prd_049",
+    ...Array.from({ length: 8 }, (_, index) =>
+      `prd_${String(index + 28).padStart(3, "0")}`,
     ),
   ];
 
@@ -663,7 +695,7 @@ test("renders local image support for every menu product", async () => {
       `prd_${String(index + 1).padStart(3, "0")}`,
     ),
   );
-  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 48);
+  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 49);
   assert.equal((html.match(/data-image-placeholder="true"/g) ?? []).length, 0);
 
   for (const [productId, imagePath] of expectedProductImages) {
