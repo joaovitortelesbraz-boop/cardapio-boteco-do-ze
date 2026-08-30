@@ -50,6 +50,9 @@ const expectedProductImages = [
   ["prd_043", "sem-alcool/Guaravita.png"],
   ["prd_044", "sem-alcool/Água de coco.png"],
   ["prd_045", "sem-alcool/Suco Del Valle.png"],
+  ["prd_046", "doses/Whisky Red Label.webp"],
+  ["prd_047", "doses/Whisky Cavalo Branco.webp"],
+  ["prd_048", "doses/Vodka Smirnoff.webp"],
 ];
 
 const legacyMenuHash =
@@ -167,13 +170,46 @@ const expectedNewProducts = [
     imagePosition: "28% 52%",
     available: true,
   },
+  {
+    id: "prd_046",
+    slug: "dose-whisky-red-label",
+    categoryId: "doses",
+    name: "Dose de Whisky Red Label",
+    priceInCents: 2000,
+    imageUrl: "/images/doses/Whisky Red Label.webp",
+    imageFit: "cover",
+    imagePosition: "28% 50%",
+    available: true,
+  },
+  {
+    id: "prd_047",
+    slug: "dose-whisky-cavalo-branco",
+    categoryId: "doses",
+    name: "Dose de Whisky Cavalo Branco",
+    priceInCents: 1700,
+    imageUrl: "/images/doses/Whisky Cavalo Branco.webp",
+    imageFit: "cover",
+    imagePosition: "28% 70%",
+    available: true,
+  },
+  {
+    id: "prd_048",
+    slug: "dose-vodka-smirnoff",
+    categoryId: "doses",
+    name: "Dose de Vodka Smirnoff",
+    priceInCents: 1200,
+    imageUrl: "/images/doses/Vodka Smirnoff.webp",
+    imageFit: "cover",
+    imagePosition: "28% 50%",
+    available: true,
+  },
 ];
 
 const expectedCategoryCounts = {
   cervejas: 8,
   "sem-alcool": 9,
   drinks: 7,
-  doses: 11,
+  doses: 14,
   doces: 2,
   cigarros: 2,
   porcoes: 4,
@@ -402,7 +438,7 @@ test("renders one consistent vector icon set for the menu categories", async () 
   assert.doesNotMatch(html, /🍺|🥤|🍹|🥃|🍬|🚬|🍟|🎮|✦/u);
 });
 
-test("preserves the legacy menu and adds exactly ten products", async () => {
+test("preserves the legacy menu except the authorized chopp price and adds exactly thirteen products", async () => {
   const menuDataUrl = new URL(
     "../src/data/menu/menu.data.ts",
     import.meta.url,
@@ -415,16 +451,25 @@ test("preserves the legacy menu and adds exactly ten products", async () => {
   const newProducts = menuProducts
     .filter((product) => Number(product.id.slice(4)) >= 36)
     .toSorted((first, second) => first.id.localeCompare(second.id));
+  const normalizedLegacyProducts = legacyProducts.map((product) =>
+    product.id === "prd_005" ? { ...product, priceInCents: 1600 } : product,
+  );
+  const choppProducts = menuProducts.filter(
+    (product) => product.slug === "chopp-stengel",
+  );
 
-  assert.equal(menuProducts.length, 45);
-  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 45);
-  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 45);
+  assert.equal(menuProducts.length, 48);
+  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 48);
+  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 48);
   assert.equal(
     createHash("sha256")
-      .update(JSON.stringify(legacyProducts))
+      .update(JSON.stringify(normalizedLegacyProducts))
       .digest("hex"),
     legacyMenuHash,
   );
+  assert.equal(choppProducts.length, 1);
+  assert.equal(choppProducts[0].name, "Chopp Stengel");
+  assert.equal(choppProducts[0].priceInCents, 1800);
   assert.deepEqual(newProducts, expectedNewProducts);
 
   assert.deepEqual(
@@ -450,7 +495,16 @@ test("preserves the legacy menu and adds exactly ten products", async () => {
         "Suco Del Valle",
       ],
     ],
-    ["doses", ["Dose de Whisky Ballantine's", "Dose Dreher"]],
+    [
+      "doses",
+      [
+        "Dose de Whisky Ballantine's",
+        "Dose Dreher",
+        "Dose de Whisky Red Label",
+        "Dose de Whisky Cavalo Branco",
+        "Dose de Vodka Smirnoff",
+      ],
+    ],
   ]) {
     const categoryNames = menuProducts
       .filter((product) => product.categoryId === categoryId)
@@ -471,7 +525,11 @@ test("renders the new products inside their existing category sections", async (
       ["prd_039", "prd_040", "prd_043", "prd_044", "prd_045"],
     ],
     ["drinks", 7, ["prd_036", "prd_037", "prd_038"]],
-    ["doses", 11, ["prd_041", "prd_042"]],
+    [
+      "doses",
+      14,
+      ["prd_041", "prd_042", "prd_046", "prd_047", "prd_048"],
+    ],
   ]) {
     const sectionHtml = normalizeRenderedHtml(
       getCategorySectionHtml(html, categoryId),
@@ -503,7 +561,43 @@ test("renders the new products inside their existing category sections", async (
     }
   }
 
-  assert.match(normalizeRenderedHtml(html), />45 itens</);
+  for (const categoryId of [
+    "cervejas",
+    "sem-alcool",
+    "drinks",
+    "doces",
+    "cigarros",
+    "porcoes",
+    "jogos",
+  ]) {
+    const sectionHtml = getCategorySectionHtml(html, categoryId);
+
+    for (const productId of ["prd_046", "prd_047", "prd_048"]) {
+      assert.doesNotMatch(
+        sectionHtml,
+        new RegExp(`data-product-card="${productId}"`),
+      );
+    }
+  }
+
+  assert.match(normalizeRenderedHtml(html), />48 itens</);
+});
+
+test("renders the updated Chopp Stengel price without duplicating the product", async () => {
+  const response = await render();
+  const html = normalizeRenderedHtml(await response.text());
+  const choppCard = getProductCardHtml(html, "prd_005");
+
+  assert.equal((html.match(/data-product-card="prd_005"/g) ?? []).length, 1);
+  assert.match(choppCard, /Chopp Stengel/);
+  assert.ok(
+    choppCard.includes(
+      new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(18),
+    ),
+  );
 });
 
 test("applies the custom framing only to the Ice Off foreground image", async () => {
@@ -554,6 +648,9 @@ test("renders local image support for every menu product", async () => {
     ),
     "prd_041",
     "prd_042",
+    "prd_046",
+    "prd_047",
+    "prd_048",
     ...Array.from({ length: 10 }, (_, index) =>
       `prd_${String(index + 26).padStart(3, "0")}`,
     ),
@@ -566,7 +663,7 @@ test("renders local image support for every menu product", async () => {
       `prd_${String(index + 1).padStart(3, "0")}`,
     ),
   );
-  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 45);
+  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 48);
   assert.equal((html.match(/data-image-placeholder="true"/g) ?? []).length, 0);
 
   for (const [productId, imagePath] of expectedProductImages) {
