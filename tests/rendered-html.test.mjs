@@ -54,6 +54,9 @@ const expectedProductImages = [
   ["prd_047", "doses/Whisky Cavalo Branco.webp"],
   ["prd_048", "doses/Vodka Smirnoff.webp"],
   ["prd_049", "doces/Fandangos.webp"],
+  ["prd_050", "copao/copao-red-label.webp"],
+  ["prd_051", "copao/copao-cavalo-branco.webp"],
+  ["prd_052", "copao/copao-ballantines.webp"],
 ];
 
 const legacyMenuHash =
@@ -215,12 +218,46 @@ const expectedNewProducts = [
     imagePosition: "48% 60%",
     available: true,
   },
+  {
+    id: "prd_050",
+    slug: "copao-whisky-red-label",
+    categoryId: "copao",
+    name: "Copão de Whisky Red Label com energético",
+    priceInCents: 4000,
+    imageUrl: "/images/copao/copao-red-label.webp",
+    imageFit: "cover",
+    imagePosition: "50% 80%",
+    available: true,
+  },
+  {
+    id: "prd_051",
+    slug: "copao-whisky-cavalo-branco",
+    categoryId: "copao",
+    name: "Copão de Whisky Cavalo Branco com energético",
+    priceInCents: 3000,
+    imageUrl: "/images/copao/copao-cavalo-branco.webp",
+    imageFit: "cover",
+    imagePosition: "50% 80%",
+    available: true,
+  },
+  {
+    id: "prd_052",
+    slug: "copao-whisky-ballantines",
+    categoryId: "copao",
+    name: "Copão de Whisky Ballantine's com energético",
+    priceInCents: 3500,
+    imageUrl: "/images/copao/copao-ballantines.webp",
+    imageFit: "cover",
+    imagePosition: "50% 80%",
+    available: true,
+  },
 ];
 
 const expectedCategoryCounts = {
   cervejas: 8,
   "sem-alcool": 9,
   drinks: 7,
+  copao: 3,
   doses: 14,
   doces: 3,
   cigarros: 2,
@@ -409,9 +446,9 @@ test("renders the category transition and reduced-motion contract", async () => 
 
   assert.match(html, /id="menu-results"/);
   assert.match(html, /data-transition-phase="idle"/);
-  assert.equal((html.match(/aria-controls="menu-results"/g) ?? []).length, 9);
+  assert.equal((html.match(/aria-controls="menu-results"/g) ?? []).length, 10);
   assert.equal((html.match(/aria-pressed="true"/g) ?? []).length, 1);
-  assert.equal((html.match(/aria-pressed="false"/g) ?? []).length, 8);
+  assert.equal((html.match(/aria-pressed="false"/g) ?? []).length, 9);
 
   assert.match(styles, /transition-duration:\s*110ms/);
   assert.match(styles, /transition-duration:\s*240ms/);
@@ -429,6 +466,7 @@ test("renders one consistent vector icon set for the menu categories", async () 
     "cervejas",
     "sem-alcool",
     "drinks",
+    "copao",
     "doses",
     "doces",
     "cigarros",
@@ -446,7 +484,7 @@ test("renders one consistent vector icon set for the menu categories", async () 
     );
   }
 
-  assert.equal((html.match(/data-category-icon=/g) ?? []).length, 17);
+  assert.equal((html.match(/data-category-icon=/g) ?? []).length, 19);
   assert.doesNotMatch(html, /🍺|🥤|🍹|🥃|🍬|🚬|🍟|🎮|✦/u);
 });
 
@@ -477,9 +515,9 @@ test("preserves the legacy menu except the authorized chopp price and adds exact
     (product) => product.slug === "chopp-stengel",
   );
 
-  assert.equal(menuProducts.length, 49);
-  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 49);
-  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 49);
+  assert.equal(menuProducts.length, 52);
+  assert.equal(new Set(menuProducts.map((product) => product.id)).size, 52);
+  assert.equal(new Set(menuProducts.map((product) => product.slug)).size, 52);
   assert.equal(
     createHash("sha256")
       .update(JSON.stringify(normalizedLegacyProducts))
@@ -525,6 +563,14 @@ test("preserves the legacy menu except the authorized chopp price and adds exact
       ],
     ],
     ["doces", ["Bala Halls", "Trident", "Salgadinho"]],
+    [
+      "copao",
+      [
+        "Copão de Whisky Red Label com energético",
+        "Copão de Whisky Cavalo Branco com energético",
+        "Copão de Whisky Ballantine's com energético",
+      ],
+    ],
   ]) {
     const categoryNames = menuProducts
       .filter((product) => product.categoryId === categoryId)
@@ -551,6 +597,7 @@ test("renders the new products inside their existing category sections", async (
       ["prd_041", "prd_042", "prd_046", "prd_047", "prd_048"],
     ],
     ["doces", 3, ["prd_049"]],
+    ["copao", 3, ["prd_050", "prd_051", "prd_052"]],
   ]) {
     const sectionHtml = normalizeRenderedHtml(
       getCategorySectionHtml(html, categoryId),
@@ -616,7 +663,27 @@ test("renders the new products inside their existing category sections", async (
     );
   }
 
-  assert.match(normalizeRenderedHtml(html), />49 itens</);
+  for (const categoryId of [
+    "cervejas",
+    "sem-alcool",
+    "drinks",
+    "doses",
+    "doces",
+    "cigarros",
+    "porcoes",
+    "jogos",
+  ]) {
+    const sectionHtml = getCategorySectionHtml(html, categoryId);
+
+    for (const productId of ["prd_050", "prd_051", "prd_052"]) {
+      assert.doesNotMatch(
+        sectionHtml,
+        new RegExp(`data-product-card="${productId}"`),
+      );
+    }
+  }
+
+  assert.match(normalizeRenderedHtml(html), />52 itens</);
 });
 
 test("renders the updated Chopp Stengel price without duplicating the product", async () => {
@@ -679,6 +746,9 @@ test("renders local image support for every menu product", async () => {
     "prd_036",
     "prd_037",
     "prd_038",
+    "prd_050",
+    "prd_051",
+    "prd_052",
     ...Array.from({ length: 9 }, (_, index) =>
       `prd_${String(index + 17).padStart(3, "0")}`,
     ),
@@ -702,7 +772,7 @@ test("renders local image support for every menu product", async () => {
       `prd_${String(index + 1).padStart(3, "0")}`,
     ),
   );
-  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 49);
+  assert.equal((html.match(/data-product-media="prd_\d{3}"/g) ?? []).length, 52);
   assert.equal((html.match(/data-image-placeholder="true"/g) ?? []).length, 0);
 
   for (const [productId, imagePath] of expectedProductImages) {

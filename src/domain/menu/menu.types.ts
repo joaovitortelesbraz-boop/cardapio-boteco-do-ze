@@ -2,6 +2,7 @@ export type MenuCategoryId =
   | "cervejas"
   | "sem-alcool"
   | "drinks"
+  | "copao"
   | "doses"
   | "doces"
   | "cigarros"
