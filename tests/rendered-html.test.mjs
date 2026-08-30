@@ -463,8 +463,15 @@ test("preserves the legacy menu except the authorized chopp price and adds exact
   const newProducts = menuProducts
     .filter((product) => Number(product.id.slice(4)) >= 36)
     .toSorted((first, second) => first.id.localeCompare(second.id));
+  const legacyPriceOverrides = {
+    prd_003: 900,
+    prd_004: 800,
+    prd_005: 1600,
+  };
   const normalizedLegacyProducts = legacyProducts.map((product) =>
-    product.id === "prd_005" ? { ...product, priceInCents: 1600 } : product,
+    product.id in legacyPriceOverrides
+      ? { ...product, priceInCents: legacyPriceOverrides[product.id] }
+      : product,
   );
   const choppProducts = menuProducts.filter(
     (product) => product.slug === "chopp-stengel",
