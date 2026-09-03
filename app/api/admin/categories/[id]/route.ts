@@ -3,6 +3,7 @@ import { getDb } from "@/db/index";
 import { categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/src/shared/lib/admin-auth";
+import { normalizeIconKey } from "@/src/domain/menu/menu.types";
 
 export async function PUT(
   request: NextRequest,
@@ -14,7 +15,7 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  const { name, shortDescription, sortOrder } = body;
+  const { name, shortDescription, iconKey, sortOrder } = body;
 
   const db = getDb();
 
@@ -36,6 +37,10 @@ export async function PUT(
     .set({
       name: name ?? existing[0].name,
       shortDescription: shortDescription ?? existing[0].shortDescription,
+      iconKey:
+        iconKey !== undefined
+          ? normalizeIconKey(iconKey)
+          : existing[0].iconKey,
       sortOrder: sortOrder ?? existing[0].sortOrder,
     })
     .where(eq(categories.id, id));

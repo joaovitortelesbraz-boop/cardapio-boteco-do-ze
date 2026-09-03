@@ -1,6 +1,9 @@
 import { drizzle } from "drizzle-orm/d1";
 import { eq, asc } from "drizzle-orm";
-import type { MenuRepository } from "@/src/domain/menu/menu.types";
+import {
+  normalizeIconKey,
+  type MenuRepository,
+} from "@/src/domain/menu/menu.types";
 import { categories, products } from "@/db/schema";
 
 export function createD1MenuRepository(db: ReturnType<typeof drizzle>): MenuRepository {
@@ -24,6 +27,7 @@ export function createD1MenuRepository(db: ReturnType<typeof drizzle>): MenuRepo
           | "jogos",
         name: row.name,
         shortDescription: row.shortDescription,
+        iconKey: normalizeIconKey(row.iconKey),
       }));
     },
 

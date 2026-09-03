@@ -32,6 +32,9 @@ async function createProductAction(formData: FormData): Promise<void> {
   const imageUrl = (formData.get("imageUrl") as string).trim() || null;
   const imageAlt = (formData.get("imageAlt") as string).trim() || null;
   const imageFit = (formData.get("imageFit") as string) || "cover";
+  const imagePosition = (formData.get("imagePosition") as string).trim() || "50% 50%";
+  const imageScaleRaw = parseFloat(formData.get("imageScale") as string);
+  const imageScale = isNaN(imageScaleRaw) ? null : imageScaleRaw;
   const available = formData.get("available") === "on" ? 1 : 0;
   const sortOrder = Number(formData.get("sortOrder") || 0);
 
@@ -56,8 +59,8 @@ async function createProductAction(formData: FormData): Promise<void> {
     imageUrl,
     imageAlt,
     imageFit,
-    imagePosition: "50% 50%",
-    imageScale: null,
+    imagePosition,
+    imageScale,
     available,
     sortOrder,
   });
@@ -159,7 +162,7 @@ export default async function NewProductPage() {
             <input
               type="text"
               name="imageUrl"
-              placeholder="ex: /images/cervejas/heineken.png"
+              placeholder="ex: /images/cervejas/heineken.webp"
               className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
             />
           </div>
@@ -187,6 +190,40 @@ export default async function NewProductPage() {
               <option value="cover">Cover</option>
               <option value="contain">Contain</option>
             </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
+              Posição da imagem
+            </label>
+            <input
+              type="text"
+              name="imagePosition"
+              defaultValue="50% 50%"
+              placeholder="ex: 50% 50%"
+              className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
+            />
+            <p className="mt-1 text-[11px] text-[#9e8b62]">
+              Formato: &quot;X% Y%&quot; (ex: &quot;50% 50%&quot; = centro, &quot;30% 20%&quot; = canto superior esquerdo)
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
+              Escala / Zoom
+            </label>
+            <input
+              type="number"
+              name="imageScale"
+              step="0.05"
+              min="0.5"
+              max="2"
+              placeholder="1.0 (sem zoom)"
+              className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
+            />
+            <p className="mt-1 text-[11px] text-[#9e8b62]">
+              1.0 = sem zoom, 1.5 = 50% maior, 0.8 = reduzido
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -221,12 +258,12 @@ export default async function NewProductPage() {
             >
               Salvar
             </button>
-          <Link
-            href="/admin/products"
-            className="rounded-md border border-[#e7a316]/30 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-[#cdb886] transition hover:border-[#ffbc24]/70 hover:text-[#ffbc24]"
-          >
-            Cancelar
-          </Link>
+            <Link
+              href="/admin/products"
+              className="rounded-md border border-[#e7a316]/30 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-[#cdb886] transition hover:border-[#ffbc24]/70 hover:text-[#ffbc24]"
+            >
+              Cancelar
+            </Link>
           </div>
         </form>
       )}

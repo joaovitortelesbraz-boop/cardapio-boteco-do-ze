@@ -31,12 +31,15 @@ function ProductMedia({ product }: ProductCardProps) {
   const imageFit = product.imageFit ?? "cover";
   const imagePosition = product.imagePosition ?? "50% 50%";
   const imageScale = product.imageScale;
+  // objectFit precisa vir sempre no style inline: o next/image com `fill`
+  // injeta `object-fit: cover` inline, que vence a classe do Tailwind. Sem
+  // isto, imageFit "contain" era ignorado e todo card renderizava como cover.
   const foregroundImageStyle: ProductImageStyle = {
+    objectFit: imageFit,
     objectPosition: imagePosition,
     ...(imageScale === undefined
       ? {}
       : {
-          objectFit: imageFit,
           "--product-image-scale": imageScale,
           "--product-image-hover-scale": Math.min(imageScale + 0.02, 1.05),
         }),

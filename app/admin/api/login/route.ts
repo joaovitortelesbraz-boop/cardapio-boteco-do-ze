@@ -11,8 +11,6 @@ function generateSessionId(): string {
 }
 
 export async function POST(request: Request) {
-  console.log("[LOGIN] route POST iniciado");
-
   const formData = await request.formData();
   const password = formData.get("password") as string;
   const expectedPassword = env.ADMIN_PASSWORD;
@@ -51,8 +49,6 @@ export async function POST(request: Request) {
   }
 
   const signedValue = await createSignedSession(sessionId, hmacSecret);
-
-  console.log("[LOGIN] cookie a setar:", signedValue);
 
   const response = NextResponse.redirect(new URL("/admin", request.url), 303);
   response.cookies.set("admin_session", signedValue, {

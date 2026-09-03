@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { deleteCategoryAction } from "../actions";
+import { ConfirmSubmitButton } from "../ConfirmSubmitButton";
+import { CategoryIcon, resolveIconKey } from "@/src/features/menu/components/CategoryIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,7 @@ async function getData() {
         id: categories.id,
         name: categories.name,
         shortDescription: categories.shortDescription,
+        iconKey: categories.iconKey,
         sortOrder: categories.sortOrder,
         productCount: count(products.id),
       })
@@ -76,49 +79,51 @@ export default async function CategoriesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e7a316]/10">
-              {rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="transition-colors hover:bg-[#171009]/50"
-                >
-                  <td className="px-5 py-4">
-                    <p className="font-medium text-[#fff0c2]">{row.name}</p>
-                    <p className="mt-0.5 text-xs text-[#9e8b62]">{row.id}</p>
-                  </td>
-                  <td className="px-5 py-4 text-[#cdb886]">
-                    {row.shortDescription}
-                  </td>
-                  <td className="px-5 py-4 text-[#cdb886]">{row.productCount}</td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/admin/categories/${row.id}`}
-                        className="rounded-md border border-[#e7a316]/30 px-3 py-1.5 text-xs font-bold text-[#cdb886] transition hover:border-[#ffbc24]/70 hover:text-[#ffbc24]"
-                      >
-                        Editar
-                      </Link>
-                      <form action={deleteCategoryAction}>
-                        <input type="hidden" name="id" value={row.id} />
-                        <button
-                          type="submit"
-                          className="rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-bold text-red-400 transition hover:border-red-500/70 hover:bg-red-500/10"
-                          onClick={(e) => {
-                            if (
-                              !confirm(
-                                `Excluir a categoria "${row.name}"? Os produtos serão removidos.`,
-                              )
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
+              {rows.map((row) => {
+                const resolvedIcon = resolveIconKey(row.iconKey, row.id);
+                return (
+                  <tr
+                    key={row.id}
+                    className="transition-colors hover:bg-[#171009]/50"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <CategoryIcon
+                          iconKey={resolvedIcon}
+                          className="size-5 shrink-0 text-[#ffbc24]"
+                        />
+                        <div>
+                          <p className="font-medium text-[#fff0c2]">{row.name}</p>
+                          <p className="mt-0.5 text-xs text-[#9e8b62]">{row.id}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-[#cdb886]">
+                      {row.shortDescription}
+                    </td>
+                    <td className="px-5 py-4 text-[#cdb886]">{row.productCount}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/categories/${row.id}`}
+                          className="rounded-md border border-[#e7a316]/30 px-3 py-1.5 text-xs font-bold text-[#cdb886] transition hover:border-[#ffbc24]/70 hover:text-[#ffbc24]"
                         >
-                          Excluir
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                          Editar
+                        </Link>
+                        <form action={deleteCategoryAction}>
+                          <input type="hidden" name="id" value={row.id} />
+                          <ConfirmSubmitButton
+                            message={`Excluir a categoria "${row.name}"? Os produtos serão removidos.`}
+                            className="rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-bold text-red-400 transition hover:border-red-500/70 hover:bg-red-500/10"
+                          >
+                            Excluir
+                          </ConfirmSubmitButton>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

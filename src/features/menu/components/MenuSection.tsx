@@ -16,7 +16,11 @@ export function MenuSection({ category, products }: MenuSectionProps) {
             className="grid size-12 shrink-0 place-items-center rounded-lg border border-[#e7a316]/30 bg-[#171009] text-[#e7a316] shadow-inner"
             aria-hidden="true"
           >
-            <CategoryIcon categoryId={category.id} className="size-6" />
+            <CategoryIcon
+              categoryId={category.id}
+              iconKey={category.iconKey}
+              className="size-6"
+            />
           </span>
           <div>
             <h3

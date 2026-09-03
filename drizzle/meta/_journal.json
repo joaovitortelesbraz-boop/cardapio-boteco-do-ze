@@ -8,6 +8,13 @@
       "when": 1788388340860,
       "tag": "0000_military_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788472151095,
+      "tag": "0001_add_category_icon_key",
+      "breakpoints": true
     }
   ]
 }

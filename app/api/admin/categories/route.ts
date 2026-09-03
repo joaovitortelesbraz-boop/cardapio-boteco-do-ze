@@ -3,6 +3,7 @@ import { getDb } from "@/db/index";
 import { categories, products } from "@/db/schema";
 import { asc, eq, count } from "drizzle-orm";
 import { requireAdmin } from "@/src/shared/lib/admin-auth";
+import { normalizeIconKey } from "@/src/domain/menu/menu.types";
 
 export async function GET() {
   if (!(await requireAdmin())) {
@@ -16,6 +17,7 @@ export async function GET() {
       id: categories.id,
       name: categories.name,
       shortDescription: categories.shortDescription,
+      iconKey: categories.iconKey,
       sortOrder: categories.sortOrder,
       productCount: count(products.id),
     })
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { id, name, shortDescription, sortOrder } = body;
+  const { id, name, shortDescription, iconKey, sortOrder } = body;
 
   if (!id || !name || !shortDescription) {
     return NextResponse.json(
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
       id,
       name,
       shortDescription,
+      iconKey: normalizeIconKey(iconKey),
       sortOrder: sortOrder ?? 0,
     });
 

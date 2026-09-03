@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { IconSelector } from "../../IconSelector";
+import { normalizeIconKey } from "@/src/domain/menu/menu.types";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,11 @@ async function updateCategoryAction(formData: FormData): Promise<void> {
   const id = formData.get("id") as string;
   const name = (formData.get("name") as string).trim();
   const shortDescription = (formData.get("shortDescription") as string).trim();
+  // normalizeIconKey descarta qualquer valor fora da lista e trata o caso de
+  // o campo nem existir no formData (radio sem seleção).
+  const iconKey = normalizeIconKey(
+    ((formData.get("iconKey") as string | null) ?? "").trim(),
+  );
   const sortOrder = Number(formData.get("sortOrder") || 0);
 
   const { getDb } = await import("@/db/index");
@@ -22,7 +29,7 @@ async function updateCategoryAction(formData: FormData): Promise<void> {
   const db = getDb();
   await db
     .update(categories)
-    .set({ name, shortDescription, sortOrder })
+    .set({ name, shortDescription, iconKey, sortOrder })
     .where(eq(categories.id, id));
 
   redirect("/admin/categories");
@@ -123,6 +130,8 @@ export default async function EditCategoryPage({
             className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
           />
         </div>
+
+        <IconSelector defaultValue={category.iconKey} />
 
         <div>
           <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">

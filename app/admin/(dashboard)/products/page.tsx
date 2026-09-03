@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { deleteProductAction } from "../actions";
+import { ConfirmSubmitButton } from "../ConfirmSubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -199,19 +200,12 @@ export default async function ProductsPage({
                         </Link>
                         <form action={deleteProductAction}>
                           <input type="hidden" name="id" value={row.id} />
-                          <button
-                            type="submit"
+                          <ConfirmSubmitButton
+                            message={`Excluir o produto "${row.name}"?`}
                             className="rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-bold text-red-400 transition hover:border-red-500/70 hover:bg-red-500/10"
-                            onClick={(e) => {
-                              if (
-                                !confirm(`Excluir o produto "${row.name}"?`)
-                              ) {
-                                e.preventDefault();
-                              }
-                            }}
                           >
                             Excluir
-                          </button>
+                          </ConfirmSubmitButton>
                         </form>
                       </div>
                     </td>

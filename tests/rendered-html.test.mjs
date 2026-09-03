@@ -462,29 +462,32 @@ test("renders the category transition and reduced-motion contract", async () => 
 test("renders one consistent vector icon set for the menu categories", async () => {
   const response = await render();
   const html = await response.text();
-  const categoryIds = [
-    "cervejas",
-    "sem-alcool",
-    "drinks",
-    "copao",
-    "doses",
-    "doces",
-    "cigarros",
-    "porcoes",
-    "jogos",
-  ];
+  // O ícone deixou de ser identificado pelo id da categoria e passou a ser
+  // identificado pela iconKey, que agora vem do banco. Sem D1 (caso destes
+  // testes) o id resolve a iconKey pelo mapa legado.
+  const expectedIconKeyByCategory = {
+    cervejas: "beer",
+    "sem-alcool": "soda",
+    drinks: "cocktail",
+    copao: "cup",
+    doses: "glass",
+    doces: "candy",
+    cigarros: "cigar",
+    porcoes: "plate",
+    jogos: "gamepad",
+  };
 
-  assert.equal((html.match(/data-category-icon="all"/g) ?? []).length, 1);
+  assert.equal((html.match(/data-icon-key="all"/g) ?? []).length, 1);
 
-  for (const categoryId of categoryIds) {
+  for (const iconKey of Object.values(expectedIconKeyByCategory)) {
     assert.equal(
-      (html.match(new RegExp(`data-category-icon="${categoryId}"`, "g")) ?? [])
-        .length,
+      (html.match(new RegExp(`data-icon-key="${iconKey}"`, "g")) ?? []).length,
       2,
     );
   }
 
-  assert.equal((html.match(/data-category-icon=/g) ?? []).length, 19);
+  assert.equal((html.match(/data-icon-key=/g) ?? []).length, 19);
+  assert.doesNotMatch(html, /data-category-icon=/);
   assert.doesNotMatch(html, /🍺|🥤|🍹|🥃|🍬|🚬|🍟|🎮|✦/u);
 });
 

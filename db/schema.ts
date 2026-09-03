@@ -4,6 +4,7 @@ export const categories = sqliteTable("categories", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   shortDescription: text("short_description").notNull(),
+  iconKey: text("icon_key"),
   sortOrder: integer("sort_order").default(0),
 });
 

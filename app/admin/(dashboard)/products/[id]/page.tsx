@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { ProductCard } from "@/src/features/menu/components/ProductCard";
+import type { MenuProduct } from "@/src/domain/menu/menu.types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,9 @@ async function updateProductAction(formData: FormData): Promise<void> {
   const imageUrl = (formData.get("imageUrl") as string).trim() || null;
   const imageAlt = (formData.get("imageAlt") as string).trim() || null;
   const imageFit = (formData.get("imageFit") as string) || "cover";
+  const imagePosition = (formData.get("imagePosition") as string).trim() || "50% 50%";
+  const imageScaleRaw = parseFloat(formData.get("imageScale") as string);
+  const imageScale = isNaN(imageScaleRaw) ? null : imageScaleRaw;
   const available = formData.get("available") === "on" ? 1 : 0;
   const sortOrder = Number(formData.get("sortOrder") || 0);
 
@@ -54,6 +59,8 @@ async function updateProductAction(formData: FormData): Promise<void> {
       imageUrl,
       imageAlt,
       imageFit,
+      imagePosition,
+      imageScale,
       available,
       sortOrder,
     })
@@ -119,12 +126,47 @@ export default async function EditProductPage({
   const product = data.product;
   const priceDisplay = (product.priceInCents / 100).toFixed(2);
 
+  const previewFit = product.imageFit ?? "cover";
+  const previewPosition = product.imagePosition ?? "50% 50%";
+  const previewScale = product.imageScale ?? 1;
+
+  const previewProduct: MenuProduct = {
+    id: product.id,
+    slug: product.slug,
+    categoryId: product.categoryId as MenuProduct["categoryId"],
+    name: product.name,
+    priceInCents: product.priceInCents,
+    description: product.description ?? undefined,
+    imageUrl: product.imageUrl ?? undefined,
+    imageAlt: product.imageAlt ?? undefined,
+    imageFit: previewFit === "contain" ? "contain" : "cover",
+    imagePosition: previewPosition,
+    imageScale: product.imageScale ?? undefined,
+    available: product.available === 1,
+  };
+
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="font-display text-3xl text-[#fff0c2]">Editar Produto</h1>
       <p className="mt-2 text-sm text-[#9e8b62]">
         Editando: <span className="text-[#ffbc24]">{product.name}</span>
       </p>
+
+      {product.imageUrl ? (
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
+            Pré-visualização
+          </p>
+          {/* É o mesmo ProductCard do cardápio público: proporção, máscara,
+              gradientes e imageFit/Position/Scale vêm de graça e não podem
+              divergir do card real. Reflete o que está salvo, não o formulário. */}
+          <ProductCard product={previewProduct} />
+          <p className="mt-2 text-[11px] text-[#9e8b62]">
+            {previewFit} · {previewPosition} · zoom {previewScale}x · reflete o
+            que está salvo
+          </p>
+        </div>
+      ) : null}
 
       <form action={updateProductAction} className="mt-8 space-y-5">
         <input type="hidden" name="id" value={product.id} />
@@ -221,6 +263,40 @@ export default async function EditProductPage({
             <option value="cover">Cover</option>
             <option value="contain">Contain</option>
           </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
+            Posição da imagem
+          </label>
+          <input
+            type="text"
+            name="imagePosition"
+            defaultValue={product.imagePosition ?? "50% 50%"}
+            className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
+          />
+          <p className="mt-1 text-[11px] text-[#9e8b62]">
+            Formato: &quot;X% Y%&quot; (ex: &quot;50% 50%&quot; = centro, &quot;30% 20%&quot; = canto superior esquerdo)
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
+            Escala / Zoom
+          </label>
+          <input
+            type="number"
+            name="imageScale"
+            step="0.05"
+            min="0.5"
+            max="2"
+            defaultValue={product.imageScale ?? ""}
+            placeholder="1.0 (sem zoom)"
+            className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
+          />
+          <p className="mt-1 text-[11px] text-[#9e8b62]">
+            1.0 = sem zoom, 1.5 = 50% maior, 0.8 = reduzido
+          </p>
         </div>
 
         <div className="flex items-center gap-3">

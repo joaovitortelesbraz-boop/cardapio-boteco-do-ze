@@ -1,4 +1,8 @@
-import type { MenuCategory, MenuCategoryId } from "@/src/domain/menu/menu.types";
+import type {
+  MenuCategory,
+  MenuCategoryId,
+  MenuIconKey,
+} from "@/src/domain/menu/menu.types";
 import { CategoryIcon } from "./CategoryIcon";
 
 export type MenuFilter = "all" | MenuCategoryId;
@@ -14,10 +18,11 @@ export function CategoryTabs({
   activeFilter,
   onChange,
 }: CategoryTabsProps) {
-  const options: ReadonlyArray<{ id: MenuFilter; name: string }> = [
-    { id: "all", name: "Tudo" },
-    ...categories,
-  ];
+  const options: ReadonlyArray<{
+    id: MenuFilter;
+    name: string;
+    iconKey?: MenuIconKey | null;
+  }> = [{ id: "all", name: "Tudo" }, ...categories];
 
   return (
     <div
@@ -50,6 +55,7 @@ export function CategoryTabs({
             <span className="relative z-10 inline-flex items-center gap-2">
               <CategoryIcon
                 categoryId={option.id}
+                iconKey={option.iconKey}
                 className="size-[18px] shrink-0"
               />
               {option.name}
