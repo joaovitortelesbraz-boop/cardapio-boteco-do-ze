@@ -2,10 +2,10 @@ import { Footer } from "@/src/shared/components/Footer";
 import { Header } from "@/src/shared/components/Header";
 import { Hero } from "@/src/features/menu/components/Hero";
 import { MenuCatalog } from "@/src/features/menu/components/MenuCatalog";
-import { getMenuPageData } from "@/src/features/menu/application/get-menu-page-data";
+import { getMenuPageDataWithD1 } from "@/src/features/menu/application/get-menu-page-data";
 
 export default async function Home() {
-  const menu = await getMenuPageData();
+  const menu = await getMenuPageDataWithD1();
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--cream)]">

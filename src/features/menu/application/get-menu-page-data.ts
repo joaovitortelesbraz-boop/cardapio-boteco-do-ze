@@ -11,3 +11,17 @@ export async function getMenuPageData(
 
   return { categories, products };
 }
+
+export async function getMenuPageDataWithD1() {
+  try {
+    const { getDb } = await import("@/db/index");
+    const { createD1MenuRepository } = await import(
+      "@/src/data/menu/d1-menu.repository"
+    );
+    const db = getDb();
+    const repository = createD1MenuRepository(db);
+    return getMenuPageData(repository);
+  } catch {
+    return getMenuPageData();
+  }
+}
