@@ -38,6 +38,10 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# secrets locais do wrangler (ADMIN_PASSWORD, HMAC_SECRET)
+.dev.vars
+.dev.vars.*
+
 # vercel
 .vercel
 

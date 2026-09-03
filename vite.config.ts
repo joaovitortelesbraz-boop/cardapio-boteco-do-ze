@@ -12,7 +12,10 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
+  // compatibility_date e compatibility_flags ficam só no wrangler.jsonc: o
+  // plugin mescla os dois arquivos, e declarar nodejs_compat aqui também fazia
+  // a API do Cloudflare recusar o deploy com "Compatibility flag specified
+  // multiple times" (10021).
   d1_databases: d1
     ? [
         {
