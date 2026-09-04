@@ -7,6 +7,14 @@
     "directory": "dist/client",
     "binding": "ASSETS"
   },
+  // Imagens enviadas pelo painel. As fotos versionadas continuam em
+  // public/images/ (servidas por ASSETS); só o upload vai para o R2.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "boteco-ze-media"
+    }
+  ],
   "observability": {
     "logs": {
       "enabled": true,

@@ -2,6 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ProductCard } from "@/src/features/menu/components/ProductCard";
 import type { MenuProduct } from "@/src/domain/menu/menu.types";
+import { ImageUploadField } from "../../ImageUploadField";
+import { env } from "cloudflare:workers";
+import {
+  isUploadedImageUrl,
+  objectKeyFromUrl,
+} from "@/src/shared/lib/image-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +54,13 @@ async function updateProductAction(formData: FormData): Promise<void> {
 
   const db = getDb();
 
+  const previous = await db
+    .select({ imageUrl: products.imageUrl })
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+  const previousImageUrl = previous[0]?.imageUrl ?? null;
+
   await db
     .update(products)
     .set({
@@ -65,6 +78,30 @@ async function updateProductAction(formData: FormData): Promise<void> {
       sortOrder,
     })
     .where(eq(products.id, id));
+
+  // Remove do R2 a imagem substituída, mas só se ela veio de upload e nenhum
+  // outro produto ainda aponta para ela. Best-effort: falha aqui não pode
+  // derrubar o salvamento — e o redirect fica fora do try.
+  if (
+    previousImageUrl &&
+    previousImageUrl !== imageUrl &&
+    isUploadedImageUrl(previousImageUrl)
+  ) {
+    try {
+      const stillUsed = await db
+        .select({ id: products.id })
+        .from(products)
+        .where(eq(products.imageUrl, previousImageUrl))
+        .limit(1);
+
+      const bucket = (env as unknown as { MEDIA?: R2Bucket }).MEDIA;
+      if (stillUsed.length === 0 && bucket) {
+        await bucket.delete(objectKeyFromUrl(previousImageUrl));
+      }
+    } catch {
+      // órfão fica para trás; não é motivo para falhar a edição
+    }
+  }
 
   redirect("/admin/products");
 }
@@ -227,17 +264,7 @@ export default async function EditProductPage({
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
-            URL da imagem
-          </label>
-          <input
-            type="text"
-            name="imageUrl"
-            defaultValue={product.imageUrl ?? ""}
-            className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
-          />
-        </div>
+        <ImageUploadField defaultValue={product.imageUrl} />
 
         <div>
           <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">

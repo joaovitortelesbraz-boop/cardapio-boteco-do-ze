@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ImageUploadField } from "../../ImageUploadField";
 
 export const dynamic = "force-dynamic";
 
@@ -155,17 +156,7 @@ export default async function NewProductPage() {
             />
           </div>
 
-          <div>
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
-              URL da imagem
-            </label>
-            <input
-              type="text"
-              name="imageUrl"
-              placeholder="ex: /images/cervejas/heineken.webp"
-              className="w-full rounded-md border border-[#e7a316]/30 bg-[#090603] px-4 py-3 text-sm text-[#fff0c2] outline-none focus:border-[#ffbc24] focus:ring-1 focus:ring-[#ffbc24]/50"
-            />
-          </div>
+          <ImageUploadField />
 
           <div>
             <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#9e8b62]">
