@@ -58,20 +58,36 @@ export function ImageUploadField({
         method: "POST",
         body,
       });
-      const data = (await response.json()) as { url?: string; error?: string };
+
+      // Nem toda resposta é JSON: um 413 do próprio framework, por exemplo,
+      // volta em texto puro. Ler como texto e só então tentar o parse evita
+      // que o erro real vire um "falha de rede" genérico.
+      const raw = await response.text();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = JSON.parse(raw) as { url?: string; error?: string };
+      } catch {
+        data = { error: raw.slice(0, 200) || undefined };
+      }
 
       if (!response.ok || !data.url) {
         setStatus("error");
-        setMessage(data.error ?? "Falha ao enviar a imagem.");
+        setMessage(
+          `Erro ${response.status}: ${data.error ?? "falha ao enviar a imagem."}`,
+        );
         return;
       }
 
       setUrl(data.url);
       setFileName(file.name);
       setStatus("idle");
-    } catch {
+    } catch (error) {
       setStatus("error");
-      setMessage("Falha de rede ao enviar a imagem.");
+      setMessage(
+        `Falha de rede ao enviar a imagem: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 

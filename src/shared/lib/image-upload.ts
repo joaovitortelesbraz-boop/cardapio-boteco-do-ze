@@ -20,7 +20,9 @@ const EXTENSION_BY_TYPE: Record<AllowedImageType, string> = {
 export const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
 
 export function formatBytes(bytes: number): string {
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  // Duas casas: com uma só, 5,01 MB e o limite de 5 MB apareciam ambos como
+  // "5.0 MB" e a mensagem de erro ficava sem sentido.
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 function extensionOf(fileName: string): string {
